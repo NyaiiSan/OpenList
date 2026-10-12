@@ -113,6 +113,8 @@ func Init(e *gin.Engine) {
 	// 封面代理与本地缩略图（媒体库页面使用，免鉴权）
 	public.GET("/media/proxy", handles.PublicMediaProxy)
 	public.GET("/media/thumb", handles.PublicMediaThumb)
+	public.GET("/comments", handles.ListComments)
+	public.POST("/comments", middlewares.AuthOptional(), handles.CreateComment)
 	public.Any("/offline_download_tools", handles.OfflineDownloadTools)
 	public.Any("/archive_extensions", handles.ArchiveExtensions)
 	public.Any("/init_status", handles.InitStatus)
