@@ -15,6 +15,15 @@ import (
 // Auth is a middleware that checks if the user is logged in.
 // if token is empty, set user to guest
 func Auth(allowDisabledGuest bool) func(c *gin.Context) {
+	return auth(allowDisabledGuest, false)
+}
+
+// AuthOptional uses a valid login token when available and treats invalid tokens as guest.
+func AuthOptional() func(c *gin.Context) {
+	return auth(true, true)
+}
+
+func auth(allowDisabledGuest, invalidTokenAsGuest bool) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		if subtle.ConstantTimeCompare([]byte(token), []byte(setting.GetStr(conf.Token))) == 1 {
@@ -30,41 +39,44 @@ func Auth(allowDisabledGuest bool) func(c *gin.Context) {
 			return
 		}
 		if token == "" {
-			guest, err := op.GetGuest()
-			if err != nil {
-				common.ErrorResp(c, err, 500)
-				c.Abort()
-				return
-			}
-			if !allowDisabledGuest && guest.Disabled {
-				common.ErrorStrResp(c, "Guest user is disabled, login please", 401)
-				c.Abort()
-				return
-			}
-			common.GinAppendValues(c, conf.UserKey, guest)
-			log.Debugf("use empty token: %+v", guest)
-			c.Next()
+			authGuest(c, allowDisabledGuest)
 			return
 		}
 		userClaims, err := common.ParseToken(token)
 		if err != nil {
+			if invalidTokenAsGuest {
+				authGuest(c, true)
+				return
+			}
 			common.ErrorResp(c, err, 401)
 			c.Abort()
 			return
 		}
 		user, err := op.GetUserByName(userClaims.Username)
 		if err != nil {
+			if invalidTokenAsGuest {
+				authGuest(c, true)
+				return
+			}
 			common.ErrorResp(c, err, 401)
 			c.Abort()
 			return
 		}
 		// validate password timestamp
 		if userClaims.PwdTS != user.PwdTS {
+			if invalidTokenAsGuest {
+				authGuest(c, true)
+				return
+			}
 			common.ErrorStrResp(c, "Password has been changed, login please", 401)
 			c.Abort()
 			return
 		}
 		if user.Disabled {
+			if invalidTokenAsGuest {
+				authGuest(c, true)
+				return
+			}
 			common.ErrorStrResp(c, "Current user is disabled, replace please", 401)
 			c.Abort()
 			return
@@ -73,6 +85,23 @@ func Auth(allowDisabledGuest bool) func(c *gin.Context) {
 		log.Debugf("use login token: %+v", user)
 		c.Next()
 	}
+}
+
+func authGuest(c *gin.Context, allowDisabled bool) {
+	guest, err := op.GetGuest()
+	if err != nil {
+		common.ErrorResp(c, err, 500)
+		c.Abort()
+		return
+	}
+	if !allowDisabled && guest.Disabled {
+		common.ErrorStrResp(c, "Guest user is disabled, login please", 401)
+		c.Abort()
+		return
+	}
+	common.GinAppendValues(c, conf.UserKey, guest)
+	log.Debugf("use guest user: %+v", guest)
+	c.Next()
 }
 
 func Authn(c *gin.Context) {

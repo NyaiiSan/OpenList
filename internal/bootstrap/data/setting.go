@@ -101,6 +101,7 @@ func InitialSettings() []model.SettingItem {
 		token = random.Token()
 	}
 	siteVersion := fmt.Sprintf("%s (Commit: %s) - Frontend: %s - Build at: %s", conf.Version, conf.GitCommit, conf.WebVersion, conf.BuiltAt)
+	backgroundPositionOptions := "center,top,bottom,left,right,top left,top center,top right,center left,center right,bottom left,bottom center,bottom right"
 	initialSettingItems := []model.SettingItem{
 		// site settings
 		{Key: conf.VERSION, Value: siteVersion, Type: conf.TypeString, Group: model.SITE, Flag: model.READONLY},
@@ -108,6 +109,7 @@ func InitialSettings() []model.SettingItem {
 		//{Key: conf.BasePath, Value: "", Type: conf.TypeString, Group: model.SITE},
 		{Key: conf.SiteTitle, Value: "OpenList", Type: conf.TypeString, Group: model.SITE},
 		{Key: conf.Announcement, Value: "Welcome to the OpenList project!\nFor the latest updates, to contribute code, or to submit suggestions and issues, please visit our [project repository](https://github.com/OpenListTeam/OpenList).", Type: conf.TypeText, Group: model.SITE},
+		{Key: conf.CommentsEnabled, Value: "false", Type: conf.TypeBool, Group: model.SITE, Flag: model.PUBLIC},
 		{Key: "pagination_type", Value: "all", Type: conf.TypeSelect, Options: "all,pagination,load_more,auto_load_more", Group: model.SITE},
 		{Key: "default_page_size", Value: "30", Type: conf.TypeNumber, Group: model.SITE},
 		{Key: conf.AllowIndexed, Value: "false", Type: conf.TypeBool, Group: model.SITE},
@@ -117,6 +119,11 @@ func InitialSettings() []model.SettingItem {
 		{Key: conf.Logo, Value: "https://res.oplist.org/logo/logo.svg", MigrationValue: "https://cdn.oplist.org/gh/OpenListTeam/Logo@main/logo.svg", Type: conf.TypeText, Group: model.STYLE},
 		{Key: conf.Favicon, Value: "https://res.oplist.org/logo/logo.svg", MigrationValue: "https://cdn.oplist.org/gh/OpenListTeam/Logo@main/logo.svg", Type: conf.TypeString, Group: model.STYLE},
 		{Key: conf.MainColor, Value: "#1890ff", Type: conf.TypeString, Group: model.STYLE},
+		{Key: conf.CustomThemeBackgroundImage, Value: "", Type: conf.TypeString, Group: model.STYLE, Flag: model.PUBLIC, Help: "Background image URL"},
+		{Key: conf.CustomThemeBackgroundPositionHorizontal, Value: "center", Type: conf.TypeSelect, Options: backgroundPositionOptions, Group: model.STYLE, Flag: model.PUBLIC, Help: "CSS background position for horizontal layouts"},
+		{Key: conf.CustomThemeBackgroundPositionVertical, Value: "center", Type: conf.TypeSelect, Options: backgroundPositionOptions, Group: model.STYLE, Flag: model.PUBLIC, Help: "CSS background position for vertical layouts"},
+		{Key: conf.CustomThemeSurfaceColor, Value: "#ffffff66", Type: conf.TypeString, Group: model.STYLE, Flag: model.PUBLIC, Help: "CSS color used for themed surfaces"},
+		{Key: conf.CustomThemeSurfaceBlur, Value: "12", Type: conf.TypeNumber, Group: model.STYLE, Flag: model.PUBLIC, Help: "Backdrop blur in pixels, from 0 to 40"},
 		{Key: "home_icon", Value: "🏠", Type: conf.TypeString, Group: model.STYLE},
 		{Key: "share_icon", Value: "🎁", Type: conf.TypeString, Group: model.STYLE},
 		{Key: "home_container", Value: "max_980px", Type: conf.TypeSelect, Options: "max_980px,hope_container", Group: model.STYLE},
