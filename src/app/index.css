@@ -53,3 +53,51 @@
 .hope-notification__list {
   width: unset;
 }
+
+html[data-openlist-custom-theme="true"] body {
+  background-image: var(--openlist-theme-background-image, none);
+  background-position: var(--openlist-theme-background-position, center);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+html[data-openlist-custom-theme="true"] .body > *,
+html[data-openlist-custom-theme="true"] .header,
+html[data-openlist-custom-theme="true"] .left-toolbar-box .left-toolbar {
+  background-color: var(--openlist-theme-surface-color, transparent);
+  border-radius: 8px;
+}
+
+html[data-openlist-custom-theme="true"] .custom-theme-surface {
+  background-color: var(--openlist-theme-surface-color, transparent);
+  border-radius: 8px;
+}
+
+.comments-form {
+  width: 100%;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  overflow: visible;
+}
+
+.comments-item {
+  transform-origin: center;
+}
+
+.comments-name {
+  overflow-wrap: anywhere;
+}
+
+.comments-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comments-error {
+  color: var(--hope-colors-danger10);
+}
