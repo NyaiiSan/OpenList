@@ -100,6 +100,8 @@ func Init(e *gin.Engine) {
 	// no need auth
 	public := api.Group("/public")
 	public.Any("/settings", handles.PublicSettings)
+	public.GET("/comments", handles.ListComments)
+	public.POST("/comments", middlewares.AuthOptional(), handles.CreateComment)
 	public.Any("/offline_download_tools", handles.OfflineDownloadTools)
 	public.Any("/archive_extensions", handles.ArchiveExtensions)
 	public.Any("/init_status", handles.InitStatus)

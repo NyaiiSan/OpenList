@@ -10,18 +10,24 @@ const (
 
 const (
 	// site
-	VERSION      = "version"
-	SiteTitle    = "site_title"
-	Announcement = "announcement"
-	AllowIndexed = "allow_indexed"
-	AllowMounted = "allow_mounted"
-	RobotsTxt    = "robots_txt"
+	VERSION         = "version"
+	SiteTitle       = "site_title"
+	Announcement    = "announcement"
+	CommentsEnabled = "comments_enabled"
+	AllowIndexed    = "allow_indexed"
+	AllowMounted    = "allow_mounted"
+	RobotsTxt       = "robots_txt"
 
-	Logo                           = "logo" // multi-lines text, L1: light, EOL: dark
-	Favicon                        = "favicon"
-	MainColor                      = "main_color"
-	HideStorageDetails             = "hide_storage_details"
-	HideStorageDetailsInManagePage = "hide_storage_details_in_manage_page"
+	Logo                                    = "logo" // multi-lines text, L1: light, EOL: dark
+	Favicon                                 = "favicon"
+	MainColor                               = "main_color"
+	CustomThemeBackgroundImage              = "custom_theme_background_image"
+	CustomThemeBackgroundPositionHorizontal = "custom_theme_background_position_horizontal"
+	CustomThemeBackgroundPositionVertical   = "custom_theme_background_position_vertical"
+	CustomThemeSurfaceColor                 = "custom_theme_surface_color"
+	CustomThemeSurfaceBlur                  = "custom_theme_surface_blur"
+	HideStorageDetails                      = "hide_storage_details"
+	HideStorageDetailsInManagePage          = "hide_storage_details_in_manage_page"
 
 	// preview
 	TextTypes                     = "text_types"
