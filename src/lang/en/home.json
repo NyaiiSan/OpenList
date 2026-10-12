@@ -62,6 +62,19 @@
   "no_images": "No images in the current folder",
   "load_more": "Load more",
   "no_more": "No more",
+  "comments": {
+    "title": "Comments",
+    "name_placeholder": "Name (optional)",
+    "content_placeholder": "Write a comment",
+    "submit": "Post",
+    "posting": "Posting...",
+    "loading": "Loading...",
+    "empty": "No comments yet",
+    "load_more": "Load more comments",
+    "retry": "Retry",
+    "load_failed": "Could not load comments",
+    "post_failed": "Could not post comment"
+  },
   "input_password": "Please input password",
   "toolbar": {
     "more": "More",

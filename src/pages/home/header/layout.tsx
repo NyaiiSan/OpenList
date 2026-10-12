@@ -47,7 +47,7 @@ export const Layout = () => {
           </Switch>
         }
       ></MenuTrigger>
-      <MenuContent>
+      <MenuContent class="custom-theme-surface">
         <For each={Object.entries(layouts)}>
           {(item) => (
             <MenuItem
