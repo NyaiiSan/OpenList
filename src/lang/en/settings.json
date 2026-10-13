@@ -5,6 +5,8 @@
   "announcement": "Announcement",
   "comments_enabled": "Enable comments",
   "comments_enabled-tips": "Show a public comment board below the file list. Public posts are rate limited.",
+  "comments_cooldown": "Comment cooldown (seconds)",
+  "comments_cooldown-tips": "Minimum time between comments per logged-in user or guest IP (0-86400 seconds). Set to 0 to disable the cooldown.",
   "aria2_secret": "Aria2 secret",
   "aria2_uri": "Aria2 uri",
   "audio_autoplay": "Audio autoplay",

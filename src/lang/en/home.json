@@ -65,7 +65,11 @@
   "comments": {
     "title": "Comments",
     "name_placeholder": "Name (optional)",
+    "count": "Comments: {{count}}",
     "content_placeholder": "Write a comment",
+    "copy": "Copy comment",
+    "delete_confirm": "Delete comment by {{name}}?",
+    "deleting": "Deleting...",
     "submit": "Post",
     "posting": "Posting...",
     "loading": "Loading...",
@@ -73,7 +77,8 @@
     "load_more": "Load more comments",
     "retry": "Retry",
     "load_failed": "Could not load comments",
-    "post_failed": "Could not post comment"
+    "post_failed": "Could not post comment",
+    "delete_failed": "Could not delete comment"
   },
   "input_password": "Please input password",
   "toolbar": {
