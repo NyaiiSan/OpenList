@@ -121,6 +121,8 @@ func Init(e *gin.Engine) {
 }
 
 func admin(g *gin.RouterGroup) {
+	g.DELETE("/comments/:id", handles.DeleteComment)
+
 	meta := g.Group("/meta")
 	meta.GET("/list", handles.ListMetas)
 	meta.GET("/get", handles.GetMeta)
