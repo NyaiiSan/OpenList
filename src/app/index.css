@@ -89,8 +89,22 @@ html[data-openlist-custom-theme="true"] .custom-theme-surface {
   transform-origin: center;
 }
 
+.comments-header {
+  min-width: 0;
+  width: 100%;
+}
+
 .comments-name {
-  overflow-wrap: anywhere;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comments-created-at {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .comments-content {
