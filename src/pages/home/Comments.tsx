@@ -370,6 +370,7 @@ export const Comments = () => {
                 }
               >
                 <HStack
+                  class="comments-header"
                   justifyContent="space-between"
                   alignItems="baseline"
                   gap="$2"
@@ -377,7 +378,11 @@ export const Comments = () => {
                   <Text fontWeight="$semibold" class="comments-name">
                     {comment.name}
                   </Text>
-                  <Text fontSize="$xs" color={metaColor()}>
+                  <Text
+                    fontSize="$xs"
+                    color={metaColor()}
+                    class="comments-created-at"
+                  >
                     {new Date(comment.created_at).toLocaleString()}
                   </Text>
                 </HStack>
