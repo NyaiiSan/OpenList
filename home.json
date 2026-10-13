@@ -64,16 +64,20 @@
   "no_more": "没有更多内容",
   "comments": {
     "title": "评论",
-    "name_placeholder": "名称（可选）",
+    "count": "评论：{{count}}",
     "content_placeholder": "写下评论",
+    "copy": "复制评论",
+    "delete_confirm": "确定删除 {{name}} 的评论吗？",
+    "deleting": "正在删除…",
     "submit": "发布",
     "posting": "正在发布…",
     "loading": "正在加载…",
-    "empty": "暂无评论",
+    "empty": "还没有评论",
     "load_more": "加载更多评论",
     "retry": "重试",
-    "load_failed": "加载评论失败",
-    "post_failed": "发布评论失败"
+    "load_failed": "无法加载评论",
+    "post_failed": "无法发布评论",
+    "delete_failed": "无法删除评论"
   },
   "input_password": "请输入密码",
   "toolbar": {
