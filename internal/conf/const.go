@@ -10,14 +10,15 @@ const (
 
 const (
 	// site
-	VERSION          = "version"
-	SiteTitle        = "site_title"
-	Announcement     = "announcement"
-	CommentsEnabled  = "comments_enabled"
-	CommentsCooldown = "comments_cooldown"
-	AllowIndexed     = "allow_indexed"
-	AllowMounted     = "allow_mounted"
-	RobotsTxt        = "robots_txt"
+	VERSION              = "version"
+	SiteTitle            = "site_title"
+	Announcement         = "announcement"
+	CommentsEnabled      = "comments_enabled"
+	CommentsCooldown     = "comments_cooldown"
+	CommentsShowMaskedIP = "comments_show_masked_ip"
+	AllowIndexed         = "allow_indexed"
+	AllowMounted         = "allow_mounted"
+	RobotsTxt            = "robots_txt"
 
 	Logo                                    = "logo" // multi-lines text, L1: light, EOL: dark
 	Favicon                                 = "favicon"

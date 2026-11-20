@@ -52,7 +52,7 @@ func normalizeComment(req *createCommentReq) error {
 
 func commentAuthor(user *model.User, ip string) string {
 	if user == nil || user.IsGuest() {
-		return ip
+		return maskCommentIP(ip)
 	}
 	return user.Username
 }
@@ -80,7 +80,7 @@ func commentCooldownDuration(seconds int) time.Duration {
 }
 
 func markLegacyGuestComment(comment *model.Comment) {
-	if !comment.IsGuest && net.ParseIP(comment.Name) != nil {
+	if !comment.IsGuest && comment.IP == "" && net.ParseIP(comment.Name) != nil {
 		comment.IsGuest = true
 	}
 }
@@ -88,6 +88,14 @@ func markLegacyGuestComment(comment *model.Comment) {
 func maskGuestCommentName(comment *model.Comment) {
 	if comment.IsGuest {
 		comment.Name = maskCommentIP(comment.Name)
+	}
+}
+
+func prepareCommentForDisplay(comment *model.Comment, showMaskedIP bool) {
+	markLegacyGuestComment(comment)
+	maskGuestCommentName(comment)
+	if showMaskedIP && net.ParseIP(comment.IP) != nil {
+		comment.Name = maskCommentIP(comment.IP)
 	}
 }
 
@@ -105,7 +113,8 @@ func maskCommentIP(address string) string {
 		if masked, ok := maskIPv4CommentIP(address); ok {
 			return masked
 		}
-		return address
+		masked, _ := maskIPv4CommentIP(ip.To4().String())
+		return masked
 	}
 
 	halves := strings.Split(address, "::")
@@ -198,9 +207,9 @@ func ListComments(c *gin.Context) {
 		common.ErrorResp(c, err, 500)
 		return
 	}
+	showMaskedIP := setting.GetBool(conf.CommentsShowMaskedIP)
 	for i := range comments {
-		markLegacyGuestComment(&comments[i])
-		maskGuestCommentName(&comments[i])
+		prepareCommentForDisplay(&comments[i], showMaskedIP)
 	}
 	common.SuccessResp(c, common.PageResp{Content: comments, Total: total})
 }
@@ -225,7 +234,12 @@ func CreateComment(c *gin.Context) {
 		common.ErrorStrResp(c, "Could not determine comment author", 500)
 		return
 	}
-	name := commentAuthor(user, c.ClientIP())
+	ip := c.ClientIP()
+	if net.ParseIP(ip) == nil {
+		common.ErrorStrResp(c, "Could not determine comment IP", 400)
+		return
+	}
+	name := commentAuthor(user, ip)
 	if len([]rune(name)) > maxCommentNameLength {
 		common.ErrorStrResp(c, "Comment author name exceeds the maximum length", 400)
 		return
@@ -233,7 +247,7 @@ func CreateComment(c *gin.Context) {
 
 	cooldownSeconds := setting.GetInt(conf.CommentsCooldown, defaultCommentCooldownSeconds)
 	cooldown := commentCooldownDuration(cooldownSeconds)
-	rateLimitKey := commentRateLimitKey(user, c.ClientIP())
+	rateLimitKey := commentRateLimitKey(user, ip)
 	now := time.Now()
 	if cooldown > 0 {
 		commentPosts.Lock()
@@ -256,6 +270,7 @@ func CreateComment(c *gin.Context) {
 
 	comment := model.Comment{
 		Name:    name,
+		IP:      ip,
 		IsGuest: user.IsGuest(),
 		Content: req.Content,
 	}
@@ -263,7 +278,7 @@ func CreateComment(c *gin.Context) {
 		common.ErrorResp(c, err, 500)
 		return
 	}
-	maskGuestCommentName(&comment)
+	prepareCommentForDisplay(&comment, setting.GetBool(conf.CommentsShowMaskedIP))
 	common.SuccessResp(c, comment)
 }
 

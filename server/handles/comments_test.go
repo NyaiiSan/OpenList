@@ -1,11 +1,22 @@
 package handles
 
 import (
+	"context"
+	"encoding/json"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/OpenListTeam/OpenList/v4/internal/conf"
+	"github.com/OpenListTeam/OpenList/v4/internal/db"
 	"github.com/OpenListTeam/OpenList/v4/internal/model"
+	"github.com/OpenListTeam/OpenList/v4/internal/op"
+	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestNormalizeComment(t *testing.T) {
@@ -70,12 +81,12 @@ func TestCommentAuthor(t *testing.T) {
 			name: "guest",
 			user: &model.User{Role: model.GUEST},
 			ip:   "192.0.2.1",
-			want: "192.0.2.1",
+			want: "192. * . * .1",
 		},
 		{
 			name: "missing user",
 			ip:   "192.0.2.1",
-			want: "192.0.2.1",
+			want: "192. * . * .1",
 		},
 	}
 
@@ -174,6 +185,11 @@ func TestMaskCommentIP(t *testing.T) {
 			want:    "::ffff:192. * . * .1",
 		},
 		{
+			name:    "hexadecimal ipv4-mapped ipv6",
+			address: "::ffff:c000:201",
+			want:    "192. * . * .1",
+		},
+		{
 			name:    "non-ip name",
 			address: "alice",
 			want:    "alice",
@@ -186,6 +202,138 @@ func TestMaskCommentIP(t *testing.T) {
 				t.Errorf("maskCommentIP(%q) = %q, want %q", test.address, got, test.want)
 			}
 		})
+	}
+}
+
+func TestPrepareCommentForDisplay(t *testing.T) {
+	tests := []struct {
+		name         string
+		comment      model.Comment
+		showMaskedIP bool
+		want         string
+		wantGuest    bool
+	}{
+		{name: "user name", comment: model.Comment{Name: "alice", IP: "192.0.2.1"}, want: "alice"},
+		{name: "user masked IP", comment: model.Comment{Name: "alice", IP: "192.0.2.1"}, showMaskedIP: true, want: "192. * . * .1"},
+		{name: "guest name", comment: model.Comment{Name: "192. * . * .1", IP: "192.0.2.1", IsGuest: true}, want: "192. * . * .1", wantGuest: true},
+		{name: "old user without IP", comment: model.Comment{Name: "alice"}, showMaskedIP: true, want: "alice"},
+		{name: "old guest", comment: model.Comment{Name: "192.0.2.1", IsGuest: true}, want: "192. * . * .1", wantGuest: true},
+		{name: "old guest without flag", comment: model.Comment{Name: "192.0.2.1"}, showMaskedIP: true, want: "192. * . * .1", wantGuest: true},
+		{name: "IP-shaped user name", comment: model.Comment{Name: "192.0.2.1", IP: "198.51.100.2"}, want: "192.0.2.1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prepareCommentForDisplay(&tt.comment, tt.showMaskedIP)
+			if tt.comment.Name != tt.want || tt.comment.IsGuest != tt.wantGuest {
+				t.Errorf("got name %q and guest %t, want %q and %t", tt.comment.Name, tt.comment.IsGuest, tt.want, tt.wantGuest)
+			}
+		})
+	}
+}
+
+func TestCommentHandlersStoreIPAndApplyDisplaySetting(t *testing.T) {
+	database, err := gorm.Open(sqlite.Open("file:"+t.Name()+"?mode=memory&cache=shared"), &gorm.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	conf.Conf = conf.DefaultConfig(t.TempDir())
+	db.Init(database)
+	op.SettingCacheUpdate()
+	t.Cleanup(op.SettingCacheUpdate)
+	settings := []model.SettingItem{
+		{Key: conf.CommentsEnabled, Value: "true"},
+		{Key: conf.CommentsCooldown, Value: "0"},
+		{Key: conf.CommentsShowMaskedIP, Value: "false"},
+	}
+	if err := db.SaveSettingItems(settings); err != nil {
+		t.Fatal(err)
+	}
+
+	post := func(user *model.User, ip string) string {
+		t.Helper()
+		recorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(recorder)
+		req := httptest.NewRequest(http.MethodPost, "/public/comments", strings.NewReader(`{"content":"hello"}`))
+		req.Header.Set("Content-Type", "application/json")
+		req.RemoteAddr = net.JoinHostPort(ip, "1234")
+		ctx.Request = req.WithContext(context.WithValue(req.Context(), conf.UserKey, user))
+		CreateComment(ctx)
+		return recorder.Body.String()
+	}
+	for _, tt := range []struct {
+		user *model.User
+		ip   string
+		name string
+	}{
+		{user: &model.User{Role: model.GUEST}, ip: "192.0.2.1", name: "192. * . * .1"},
+		{user: &model.User{Role: model.GUEST}, ip: "2001:db8:1:2:3:4:5:6", name: "2001: * : * :2:3:4:5:6"},
+		{user: &model.User{Username: "alice"}, ip: "198.51.100.2", name: "alice"},
+	} {
+		body := post(tt.user, tt.ip)
+		var response struct {
+			Code int `json:"code"`
+			Data struct {
+				Name string  `json:"name"`
+				IP   *string `json:"ip"`
+			} `json:"data"`
+		}
+		if err := json.Unmarshal([]byte(body), &response); err != nil {
+			t.Fatal(err)
+		}
+		if response.Code != 200 || response.Data.Name != tt.name || response.Data.IP != nil || strings.Contains(body, tt.ip) {
+			t.Fatalf("unexpected create response: %s", body)
+		}
+		var saved model.Comment
+		if err := database.Order("id DESC").First(&saved).Error; err != nil {
+			t.Fatal(err)
+		}
+		if saved.Name != tt.name || saved.IP != tt.ip {
+			t.Fatalf("stored name/IP = %q/%q, want %q/%q", saved.Name, saved.IP, tt.name, tt.ip)
+		}
+	}
+	if err := database.Create(&model.Comment{Name: "192.0.2.9", Content: "legacy"}).Error; err != nil {
+		t.Fatal(err)
+	}
+	list := func() string {
+		t.Helper()
+		recorder := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(recorder)
+		ctx.Request = httptest.NewRequest(http.MethodGet, "/public/comments", nil)
+		ListComments(ctx)
+		return recorder.Body.String()
+	}
+	body := list()
+	if !strings.Contains(body, `"name":"alice"`) || !strings.Contains(body, `"name":"192. * . * .9"`) || strings.Contains(body, "192.0.2.9") {
+		t.Fatalf("unexpected list response with names: %s", body)
+	}
+	if err := database.Model(&model.SettingItem{}).Where("key = ?", conf.CommentsShowMaskedIP).Update("value", "true").Error; err != nil {
+		t.Fatal(err)
+	}
+	op.SettingCacheUpdate()
+	body = post(&model.User{Username: "bob"}, "203.0.113.3")
+	if !strings.Contains(body, `"name":"203. * . * .3"`) || strings.Contains(body, "203.0.113.3") {
+		t.Fatalf("unexpected create response with masked IP: %s", body)
+	}
+	body = list()
+	if !strings.Contains(body, `"name":"198. * . * .2"`) || strings.Contains(body, "198.51.100.2") || strings.Contains(body, `"ip":`) {
+		t.Fatalf("unexpected list response with masked IP: %s", body)
+	}
+	var bob model.Comment
+	if err := database.Where("name = ?", "bob").First(&bob).Error; err != nil {
+		t.Fatal(err)
+	}
+	if bob.IP != "203.0.113.3" {
+		t.Fatalf("stored IP = %q", bob.IP)
+	}
+	if err := database.Model(&model.SettingItem{}).Where("key = ?", conf.CommentsShowMaskedIP).Update("value", "false").Error; err != nil {
+		t.Fatal(err)
+	}
+	op.SettingCacheUpdate()
+	if body = list(); !strings.Contains(body, `"name":"bob"`) {
+		t.Fatalf("switching back did not restore the stored name: %s", body)
+	}
+	if body = post(&model.User{Role: model.GUEST}, "invalid"); !strings.Contains(body, `"code":400`) {
+		t.Fatalf("invalid IP was accepted: %s", body)
 	}
 }
 
