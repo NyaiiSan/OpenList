@@ -7,6 +7,8 @@
   "comments_enabled-tips": "在文件列表下方显示公开评论区。公开评论会受到频率限制。",
   "comments_cooldown": "评论冷却时间（秒）",
   "comments_cooldown-tips": "每位已登录用户或访客 IP 两次评论之间的最短间隔（0-86400 秒）。设为 0 可禁用冷却。",
+  "comments_show_masked_ip": "评论显示脱敏 IP 而非名字",
+  "comments_show_masked_ip-tips": "以脱敏 IP 代替评论者名字。未记录 IP 的旧评论仍显示原有名字。",
   "aria2_secret": "Aria2 密钥",
   "aria2_uri": "Aria2 地址",
   "audio_autoplay": "自动播放音频",
