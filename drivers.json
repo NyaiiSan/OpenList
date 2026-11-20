@@ -560,6 +560,30 @@
     "thumbnail": "缩略图",
     "thumbnail-tips": "启用在缩略图文件夹下预先生成的缩略图"
   },
+  "CtFile": {
+    "base_url": "基础 URL",
+    "base_url-tips": "API 基础地址，默认 https://rest.ctfile.com/v1",
+    "cloud_type": "网盘类型",
+    "cloud_types": {
+      "private": "私有",
+      "public": "公开"
+    },
+    "order_by": "排序依据",
+    "order_bys": {
+      "name": "名称",
+      "size": "大小",
+      "time": "时间"
+    },
+    "order_direction": "排序方式",
+    "order_directions": {
+      "asc": "升序",
+      "desc": "降序"
+    },
+    "root_folder_id": "根文件夹 ID",
+    "session": "会话",
+    "session-tips": "城通网盘控制台 → 开放接口登录密钥管理 中的 OpenAPI 会话令牌",
+    "user_agent": "用户代理"
+  },
   "Degoo": {
     "access_token": "访问令牌",
     "access_token-tips": "Degoo API 访问令牌，自动获取",
@@ -1008,6 +1032,8 @@
     "email": "邮箱",
     "enable_direct_upload": "启用前端直传",
     "enable_direct_upload-tips": "允许不经OpenList直接上传到OneDrive",
+    "is_sharepoint": "Is sharepoint",
+    "is_sharepoint-tips": "Mount a SharePoint site's default document library instead of a user's OneDrive",
     "region": "地区",
     "regions": {
       "cn": "世纪互联",
@@ -1016,6 +1042,8 @@
       "us": "美国版"
     },
     "root_folder_path": "根文件夹路径",
+    "site_id": "Site id",
+    "site_id-tips": "One of: <host>,<siteGuid>,<webGuid>; <host>:/sites/<name>; or a full site URL. Point it at the site that owns the library — a bare host resolves to the empty root-site library",
     "tenant_id": "租户 ID"
   },
   "OpenList": {
@@ -1634,6 +1662,7 @@
     "Cloudreve": {},
     "Cloudreve V4": {},
     "Crypt": {},
+    "CtFile": {},
     "Degoo": {},
     "Doge": {},
     "Doubao": {},
@@ -1735,6 +1764,7 @@
     "Cloudreve": "Cloudreve",
     "Cloudreve V4": "Cloudreve V4",
     "Crypt": "Crypt",
+    "CtFile": "城通网盘",
     "Degoo": "Degoo",
     "Doge": "多吉云",
     "Doubao": "豆包",
