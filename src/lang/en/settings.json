@@ -7,6 +7,8 @@
   "comments_enabled-tips": "Show a public comment board below the file list. Public posts are rate limited.",
   "comments_cooldown": "Comment cooldown (seconds)",
   "comments_cooldown-tips": "Minimum time between comments per logged-in user or guest IP (0-86400 seconds). Set to 0 to disable the cooldown.",
+  "comments_show_masked_ip": "Show masked IP instead of comment name",
+  "comments_show_masked_ip-tips": "Show masked IP addresses for commenters instead of names. Older comments without a recorded IP retain their names.",
   "aria2_secret": "Aria2 secret",
   "aria2_uri": "Aria2 uri",
   "audio_autoplay": "Audio autoplay",
